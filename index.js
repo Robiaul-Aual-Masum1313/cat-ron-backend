@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import "dotenv/config";
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 const app = express()
 const PORT = 8000
 
@@ -23,16 +23,57 @@ app.use(express.json());
 const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("cat-ron");
 const bookCollection = db.collection("books");
-// const bookingCollection = db.collection("bookings");
+const borrowCollection = db.collection("borrows");
 app.get('/', (req,res) => {
     res.send('Server running properly')
+})
+app.get('/books', async (req,res) => {
+  const result = await bookCollection.find().toArray()
+  res.send(result)
 })
 app.post('/books', async (req,res) => {
     const data = req.body
     const result = await bookCollection.insertOne(data)
     res.send(result)
+})
+app.get('/books/:id', async (req,res) => {
+  const {id}  = await req.params
+  const result = await bookCollection.findOne({
+    _id: new ObjectId(id)
+  })
+  res.send(result)
+})
+app.patch('/books/:id', async (req,res) => {
+  const {id} = await  req.params
+  const data = req.body
+  const result = await bookCollection.updateOne({
+    _id: new ObjectId(id)
+  },
+  {
+    $set: data
+  }
+)
+  res.send(result)
+})
+app.delete('/books/:id', async (req,res) => {
+  const {id} = await  req.params
+  const result = await bookCollection.deleteOne({
+    _id: new ObjectId(id)
+  })
+  res.send(result)
+})
 
-
+app.get('/mybooks/:id' , async (req,res) => {
+  const {id} = await req.params
+  const result = await bookCollection.find({
+    email: id
+  }).toArray()
+  res.send(result)
+})
+app.post('/borrows' , async (req,res) => {
+  const data = req.body
+  const result = await borrowCollection.insertOne(data)
+  res.send(result)
 })
 // server url http://localhost:8000/
 app.listen(PORT, () => {
