@@ -75,8 +75,36 @@ app.post('/borrows' , async (req,res) => {
   const result = await borrowCollection.insertOne(data)
   res.send(result)
 })
+app.get('/borrows/:id' ,async (req,res) => {
+  const {id} = await req.params
+  const result = await borrowCollection.find({
+    UserEmail: id
+  }).sort({ BorrowDate: -1 }).toArray()
+  res.send(result)
+})
+app.delete('/borrows/:id' , async (req,res) => {
+  const {id} = await req.params
+
+  const result = await borrowCollection.deleteOne({
+    _id: new ObjectId(id)
+  })
+  res.send(result)
+})
+app.patch('/borrows/:id' ,async (req,res) => {
+    const {id} = await req.params
+  const result = await bookCollection.updateOne({
+    _id: new ObjectId(id)
+  },
+  {
+    $inc:{ availableCopies: 1 }
+  }
+)
+res.send(result)
+})
 // server url http://localhost:8000/
 app.listen(PORT, () => {
     console.log(`Server is running at port ${PORT}`);
     
 })
+
+export default app
