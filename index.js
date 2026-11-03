@@ -108,6 +108,12 @@ app.patch('/borrows/:id' ,async (req,res) => {
 )
 res.send(result)
 })
+app.get('/new-arrivals', async(req,res) => {
+  const result = await bookCollection.find().sort({
+    addedAt: -1
+  }).limit(6).toArray()
+  res.send(result)
+})
 // server url http://localhost:8000/
 app.listen(PORT, () => {
     console.log(`Server is running at port ${PORT}`);
