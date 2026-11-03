@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import "dotenv/config";
 import { MongoClient, ObjectId } from 'mongodb';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 const app = express()
 const PORT = 8000
 
@@ -24,6 +25,26 @@ const mongoClient = await connectToMongoDB();
 const db = mongoClient.db("cat-ron");
 const bookCollection = db.collection("books");
 const borrowCollection = db.collection("borrows");
+
+const veryfyJwt = async (req,res,next) => {
+  const authorization = req.headers.authorization
+  if(!authorization){
+    res.status(401).send({msg: 'Not authorized'})
+  }
+  const token = authorization.split(' ')[1]
+  if(!token){
+    res.status(401).send({msg: 'Not authrized'})
+  }
+  try{
+    const jwks = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`))
+    const {payload} = await jwtVerify(token, jwks)
+    next()
+  }
+  catch(error){
+    console.error('Token validation failed!' , error)
+    throw error
+  }
+}
 app.get('/', (req,res) => {
     res.send('Server running properly')
 })
