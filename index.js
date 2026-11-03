@@ -72,6 +72,13 @@ app.get('/mybooks/:id' , async (req,res) => {
 })
 app.post('/borrows' , async (req,res) => {
   const data = req.body
+  const {BookID} = data
+  console.log(BookID);
+  const result1 = await bookCollection.updateOne({
+    _id: new ObjectId(BookID)
+  },{
+    $inc:{ availableCopies: -1 }
+  })
   const result = await borrowCollection.insertOne(data)
   res.send(result)
 })
