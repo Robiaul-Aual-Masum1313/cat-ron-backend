@@ -29,11 +29,11 @@ const borrowCollection = db.collection("borrows");
 const veryfyJwt = async (req,res,next) => {
   const authorization = req.headers.authorization
   if(!authorization){
-    res.status(401).send({msg: 'Not authorized'})
+    return res.status(401).send({msg: 'Not authorized'})
   }
   const token = authorization.split(' ')[1]
   if(!token){
-    res.status(401).send({msg: 'Not authrized'})
+    return res.status(401).send({msg: 'Not authrized'})
   }
   try{
     const jwks = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`))
@@ -52,7 +52,7 @@ app.get('/books', async (req,res) => {
   const result = await bookCollection.find().toArray()
   res.send(result)
 })
-app.post('/books', async (req,res) => {
+app.post('/books', veryfyJwt, async (req,res) => {
     const data = req.body
     const result = await bookCollection.insertOne(data)
     res.send(result)
@@ -84,7 +84,7 @@ app.delete('/books/:id', async (req,res) => {
   res.send(result)
 })
 
-app.get('/mybooks/:id' , async (req,res) => {
+app.get('/mybooks/:id' ,veryfyJwt, async (req,res) => {
   const {id} = await req.params
   const result = await bookCollection.find({
     email: id
@@ -103,7 +103,7 @@ app.post('/borrows' , async (req,res) => {
   const result = await borrowCollection.insertOne(data)
   res.send(result)
 })
-app.get('/borrows/:id' ,async (req,res) => {
+app.get('/borrows/:id' , veryfyJwt ,async (req,res) => {
   const {id} = await req.params
   const result = await borrowCollection.find({
     UserEmail: id
